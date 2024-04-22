@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(cors({
     origin: ["http://localhost:3000"],
-    methods: ["POST", "GET"],
+    methods: ["POST", "GET","PUT","DELETE"],
     credentials: true
 }));  
 
@@ -39,7 +39,7 @@ app.post('/login', (req, res) => {
             const name = data[0].email;
             const token = jwt.sign({ name }, "our-jsonwebtoken-secret-key", { expiresIn: '1h' });
             res.cookie('token', token, { httpOnly: true });
-            return res.json({ status: "Success" });
+            return res.json({ status: data[0].role });
         } else {
             return res.status(401).json({ msg: 'Authentication failed' });
         }
@@ -76,6 +76,53 @@ app.post('/sign', (req, res) => {
     });
 });
 
+app.get('/',(req,res)=>{
+    const sql = "SELECT * FROM medcationl";
+    db.query(sql,(err,data)=>{
+        if(err) return res.json("error:"+ err);
+        else return res.json(data);
+    })
+})
+
+app.post("/create10meQd",(req, res)=>{
+    const sql = "INSERT INTO medcationl (`name`,`type`,`disease`) VALUES (?)";
+    const value = [
+        req.body.name,
+        req.body.type,
+        req.body.disease
+    ]
+    db.query(sql,[value],(err, data)=>{
+        if(err) {
+            return res.json("error:"+ err);
+        }else return res.json(data);
+    })
+})
+
+app.put("/upda12te-med/:id",(req, res)=>{
+    const sql = "UPDATE medcationl SET name=?, type=?, disease=? WHERE id=?";
+    const value = [
+        req.body.name,
+        req.body.type,
+        req.body.disease
+    ]
+    const Id =Number(req.params.id);
+    db.query(sql,[...value,Id],(err, data)=>{
+        if(err) {
+            console.log(err);
+            return res.json("error:"+ err);
+        }else return res.json(data);
+    })
+})
+app.delete("/delete/:id",(req, res)=>{
+    const sql = "DELETE FROM medcationl WHERE id=?";
+    const Id =Number(req.params.id);
+    db.query(sql,[Id],(err, data)=>{
+        if(err) {
+            console.log(err);
+            return res.json("error:"+ err);
+        }else return res.json(data);
+    })
+})
 
 
 app.listen(3006, () => {
