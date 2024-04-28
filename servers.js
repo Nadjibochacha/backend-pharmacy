@@ -8,10 +8,9 @@ const app = express();
 app.use(express.json());
 app.use(cors({
     origin: ["http://localhost:3000"],
-    methods: ["POST", "GET","PUT","DELETE"],
+    methods: ["POST", "GET", "PUT", "DELETE"],
     credentials: true
-}));  
-
+}));
 app.use(cookieParser());
 
 const db = mysql.createConnection({
@@ -20,7 +19,8 @@ const db = mysql.createConnection({
     password: "",
     database: "pharmacy"
 });
-//login and sign up
+
+// Login and sign up
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
     const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
@@ -44,11 +44,11 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.post('/sign', (req, res) => {
-    const { email, password } = req.body;
+app.post('/signup', (req, res) => {
+    const { email, password,name } = req.body;
     const sql = "SELECT * FROM users WHERE email = ?";
     db.query(sql, [email], (err, data) => {
-        if (email === "" || email === null|| password ==="" || password===null) {
+        if (email === "" || email === null|| password ==="" || password===null || name === null) {
             return res.status(500).json({ msg: 'Informations not valide' });
         }
         if (err) {
@@ -56,8 +56,8 @@ app.post('/sign', (req, res) => {
             return res.status(500).json({ msg: "Server side error" });
         }
         if (data.length === 0) {
-            const sql1 = "INSERT INTO users(email,password) VALUES (?,?)";
-            db.query(sql1, [email, password], (err, result) => {
+            const sql1 = "INSERT INTO users(name,email,password) VALUES (?,?)";
+            db.query(sql1, [name,email, password], (err, result) => {
                 if (err) {
                     console.log("Database error: " + err);
                     return res.status(500).json({ msg: "Server side error" });
@@ -73,16 +73,17 @@ app.post('/sign', (req, res) => {
         }
     });
 });
-//pharmacien dash
-app.get('/pharmacien',(req,res)=>{
+
+// Pharmacien dashboard
+app.get('/pharmacien', (req, res) => {
     const sql = "SELECT * FROM medcationl";
     db.query(sql,(err,data)=>{
         if(err) return res.json("error:"+ err);
         else return res.json(data);
     })
-})
+});
 
-app.post("/create10meQd",(req, res)=>{
+app.post('/pharmacien/create-medication', (req, res) => {
     const sql = "INSERT INTO medcationl (`name`,`type`,`disease`) VALUES (?)";
     const value = [
         req.body.name,
@@ -94,9 +95,9 @@ app.post("/create10meQd",(req, res)=>{
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
+});
 
-app.put("/upda12te-med/:id",(req, res)=>{
+app.put('/pharmacien/update-medication/:id', (req, res) => {
     const sql = "UPDATE medcationl SET name=?, type=?, disease=? WHERE id=?";
     const value = [
         req.body.name,
@@ -110,9 +111,10 @@ app.put("/upda12te-med/:id",(req, res)=>{
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
+});
 
-app.delete("/delete/:id",(req, res)=>{
+app.delete('/pharmacien/delete-medication/:id', (req, res) => {
+    // Implementation remains the same
     const sql = "DELETE FROM medcationl WHERE id=?";
     const Id =Number(req.params.id);
     db.query(sql,[Id],(err, data)=>{
@@ -121,17 +123,20 @@ app.delete("/delete/:id",(req, res)=>{
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
-//manager dash : storage 
-app.get("/maçna§g2er°/stor-§age",(req,res)=>{
+});
+
+// Manager dashboard: Storage
+app.get('/manager/storage', (req, res) => {
+    // Implementation remains the same
     const sql = "SELECT * FROM stocke";
     db.query(sql,(err,data)=>{
         if(err) return res.json("error:"+ err);
         else return res.json(data);
     })
-})
+});
 
-app.post("/maçna§g2er°/create10meQd",(req, res)=>{
+app.post('/manager/create-product', (req, res) => {
+    // Implementation remains the same
     const sql = "INSERT INTO stocke (`name`,`count`,`exp`, `cat`) VALUES (?)";
     const value = [
         req.body.name,
@@ -144,9 +149,10 @@ app.post("/maçna§g2er°/create10meQd",(req, res)=>{
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
+});
 
-app.delete("/maçna§g2er°/d§el§et§eProd/:id",(req, res)=>{
+app.delete('/manager/delete-product/:id', (req, res) => {
+    // Implementation remains the same
     const sql = "DELETE FROM stocke WHERE id=?";
     const Id =Number(req.params.id);
     db.query(sql,[Id],(err, data)=>{
@@ -155,9 +161,10 @@ app.delete("/maçna§g2er°/d§el§et§eProd/:id",(req, res)=>{
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
+});
 
-app.put("/upda12te-med/:id",(req, res)=>{
+app.put('/manager/update-product/:id', (req, res) => {
+    // Implementation remains the same
     const sql = "UPDATE stocke SET name=?, count=?, exp=?, cat=? WHERE id=?";
     const value = [
         req.body.name,
@@ -172,43 +179,49 @@ app.put("/upda12te-med/:id",(req, res)=>{
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
-//manager dash : commands
-app.get("/maçna§g2er°/com§and§d",(req,res)=>{
+});
+
+// Manager dashboard: Commands
+app.get('/manager/commands', (req, res) => {
+    // Implementation remains the same
     const sql = "SELECT * FROM command";
     db.query(sql,(err,data)=>{
         if(err) return res.json("error:"+ err);
         else return res.json(data);
     })
-})
-//seller dash
-app.get("/maçna§g2er°/S§all§Er",(req,res)=>{
-    const sql = "SELECT * FROM user WHERE role = 'vendeur' ";
-    db.query(sql,(err,data)=>{
-        if(err) return res.json("error:"+ err);
-        else return res.json(data);
-    })
-})
+});
 
-app.post("/maçna§g2er°/create10SallER",(req,res)=>{
-    const sql = "INSERT INTO user (`name`,`gmail`,`role`) VALUES (?)";
+// Manager dashboard: Sellers
+app.get('/manager/sellers', (req, res) => {
+    // Implementation remains the same
+    const sql = "SELECT * FROM `users` WHERE role = 'vendeur'";
+    db.query(sql,(err,users)=>{
+        if(err) return res.json("error:"+ err);
+        else return res.json(users);
+    })
+});
+
+app.post('/manager/create-seller', (req, res) => {
+    // Implementation remains the same
     const value = [
         req.body.name,
-        req.body.gmail,
+        req.body.email,
         req.body.role
     ]
+    const sql = "INSERT INTO users(name,email,role) VALUES (?)";
     db.query(sql,[value],(err, data)=>{
         if(err) {
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
+});
 
-app.put("/maçna§g2er°/upda12te10SallER/:id", (req,res)=>{
-    const sql = "UPDATE user SET name=?, gmail=?, WHERE id=?";
+app.put('/manager/update-seller/:id', (req, res) => {
+    // Implementation remains the same
+    const sql = "UPDATE users SET name=?, email=?, WHERE id=?";
     const value = [
         req.body.name,
-        req.body.gmail,
+        req.body.email,
     ]
     const Id =Number(req.params.id);
     db.query(sql,[...value,Id],(err, data)=>{
@@ -217,18 +230,19 @@ app.put("/maçna§g2er°/upda12te10SallER/:id", (req,res)=>{
             return res.json("error:"+ err);
         }else return res.json(data);
     })
-})
-//delivery
-app.get('/maçna§g2er°/del!iv§ery',(req,res)=>{
-    const sql = "SELECT * FROM user WHERE role = 'fournisseur' ";
-    db.query(sql,(err,data)=>{
+});
+
+// Delivery
+app.get('/manager/delivery', (req, res) => {
+    // Implementation remains the same
+    const sql = "SELECT * FROM users WHERE role = 'fournisseur' ";
+    db.query(sql,(err,users)=>{
         if(err) return res.json("error:"+ err);
-        else return res.json(data);
+        else return res.json(users);
     })
-})
+});
 
-
-
+// Start the server
 app.listen(3006, () => {
-    console.log("Listening at port 3006");
+    console.log("Server is running on port 3006");
 });
